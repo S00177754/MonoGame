@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Sprites;
 
-namespace Wk4Lab1
+namespace Week4Lab1
 {
     /// <summary>
     /// This is the main type for your game.
@@ -13,19 +13,27 @@ namespace Wk4Lab1
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        SimpleSprite background;
+        Viewport mapViewport;
+        Viewport originalViewPort;
+
+        private Texture2D _txCharacter;
+        private Texture2D _txBackGround;
+
+        Vector2 CharacterPosition = new Vector2(10, 10);
+
+        private Texture2D _txDot;
+
         SimpleSprite character1;
-        SimpleSprite character2;
+        SimpleSprite background;
+        SimpleSprite dot;
 
-        SpriteFont collisionFont;
-
-        string collisionMessage = "";
-        string characterSpeech = "";
 
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+            
+
         }
 
         /// <summary>
@@ -37,7 +45,17 @@ namespace Wk4Lab1
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+            // Sample the original Viewport
+            originalViewPort = GraphicsDevice.Viewport;
+            GraphicsDevice.Viewport = originalViewPort;
 
+          
+            // Create the map viewport
+            mapViewport.Bounds = new Rectangle(0, 0,
+                originalViewPort.Bounds.Width / 10,
+                originalViewPort.Bounds.Height / 10);
+            mapViewport.X = 0;
+            mapViewport.Y = 0;
             base.Initialize();
         }
 
@@ -49,17 +67,13 @@ namespace Wk4Lab1
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
+            _txBackGround = Content.Load<Texture2D>(@"Textures\backgroundImage");
+            _txCharacter = Content.Load<Texture2D>(@"Textures\body2");
+            _txDot = Content.Load<Texture2D>(@"Textures\body");
 
-            Texture2D _txBackground = Content.Load<Texture2D>(@"Textures/background");
-            Texture2D _txBlueGhost = Content.Load<Texture2D>(@"Textures/blueghost");
-            Texture2D _txPurpleGhost = Content.Load<Texture2D>(@"Textures/purpleghost");
-
-            collisionFont = Content.Load<SpriteFont>(@"Font/collisionFont");
-
-            background = new SimpleSprite(_txBackground, Vector2.Zero);
-            character1 = new SimpleSprite(_txBlueGhost, new Vector2(30,30));
-            character2 = new SimpleSprite(_txPurpleGhost, Vector2.Zero);
-
+            character1 = new SimpleSprite(_txCharacter, Vector2.Zero);
+            background = new SimpleSprite(_txBackGround, Vector2.Zero);
+            dot = new SimpleSprite(_txDot, Vector2.Zero);
             // TODO: use this.Content to load your game content here
         }
 
@@ -79,12 +93,11 @@ namespace Wk4Lab1
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            float speed = 5.0f;
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            Vector2 previousPos = character1.Position;
-            Vector2 previousPosTwo = character2.Position;
+            float speed = 5;
+            CharacterPosition = character1.Position;
 
             if (Keyboard.GetState().IsKeyDown(Keys.A))
             {
@@ -104,46 +117,7 @@ namespace Wk4Lab1
                 character1.Move(new Vector2(0, 1) * speed);
             }
 
-           
-
-            //Character Two
-
-            if (Keyboard.GetState().IsKeyDown(Keys.Left)) //&& character2.Position.X > 0
-            {
-                character2.Move(new Vector2(-1, 0) * speed);
-            }
-            else if (Keyboard.GetState().IsKeyDown(Keys.Right)) //&& character2.Position.X <= GraphicsDevice.Viewport.Bounds.Width - character2.Image.Width
-            {
-                character2.Move(new Vector2(1, 0) * speed);
-            }
-
-            if (Keyboard.GetState().IsKeyDown(Keys.Up)) //&& character2.Position.Y > 0
-            {
-                character2.Move(new Vector2(0, -1) * speed);
-            }
-            else if (Keyboard.GetState().IsKeyDown(Keys.Down)) //&& character2.Position.Y <= GraphicsDevice.Viewport.Bounds.Height - character2.Image.Height
-            {
-                character2.Move(new Vector2(0, 1) * speed);
-            }
-
-            if (!GraphicsDevice.Viewport.Bounds.Contains(character1.BoundingRect))
-            {
-                character1.Move(previousPos - character1.Position);
-            }
-            if (!GraphicsDevice.Viewport.Bounds.Contains(character2.BoundingRect))
-            {
-                character2.Move(previousPosTwo - character2.Position);
-            }
-
-
-            if (character1.IsIntersecting(character2))
-            {
-                collisionMessage = "We are in collision";
-            }
-            else
-            {
-                collisionMessage = "We are not in collision";
-            }
+            // TODO: Add your update logic here
 
             base.Update(gameTime);
         }
@@ -154,18 +128,33 @@ namespace Wk4Lab1
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+            GraphicsDevice.Viewport = originalViewPort;
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             spriteBatch.Begin();
-           
-            background.draw(spriteBatch);
+            //spriteBatch.Draw(_txBackGround, originalViewPort.Bounds, Color.White);
+            //spriteBatch.Draw(_txCharacter, CharacterPosition, Color.White);
+            background.drawVP(spriteBatch,originalViewPort.Bounds);
             character1.draw(spriteBatch);
-            character2.draw(spriteBatch);
-
-            spriteBatch.DrawString(collisionFont, collisionMessage, new Vector2(150, 150), Color.White);
-            character1.drawString(spriteBatch, collisionFont);
-            character2.drawString(spriteBatch, collisionFont);
             spriteBatch.End();
+
+            GraphicsDevice.Viewport = mapViewport;
+
+            //SpriteBatch
+            spriteBatch.Begin();
+
+            //spriteBatch.Draw(_txDot, CharacterPosition * 0.1f, null, Color.White, 0f, Vector2.Zero, 0.1f, SpriteEffects.None, 0);
+            //spriteBatch.Draw(_txBackGround, mapViewport.Bounds, Color.White);
+
+            dot.draw(spriteBatch);
+            background.drawVP(spriteBatch, mapViewport.Bounds);
+            //dot.draw(spriteBatch);
+
+            spriteBatch.End();
+
+
+            // TODO: Add your drawing code here
+
             base.Draw(gameTime);
         }
     }

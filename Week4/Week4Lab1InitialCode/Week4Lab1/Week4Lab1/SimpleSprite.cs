@@ -31,6 +31,23 @@ namespace Sprites
             
         }
 
+        public void drawVP(SpriteBatch sp, Rectangle destination)
+        {
+            if (Visible)
+                sp.Draw(Image, destination, Color.White);
+
+        }
+
+        public void drawDotMinimap(SpriteBatch sp, Vector2 PlayerPos)
+        {
+            if (Visible)
+            {
+                sp.Draw(Image, PlayerPos * 0.1f, null, Color.White, 0f, Vector2.Zero, 0.1f, SpriteEffects.None, 0);
+            }
+        }
+
+        
+
         public void Move(Vector2 delta)
         {
             Position += delta;
