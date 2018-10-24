@@ -85,6 +85,9 @@ namespace Game1
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+            Vector2 previousGhostPos = ghost.Position;
+            Vector2 previousCamPos = cam.CamPos;
+
             #region Controls
             if (Keyboard.GetState().IsKeyDown(Keys.W)) //&& ghost.Position.Y <= GraphicsDevice.Viewport.Bounds.Height - ghost.Image.Height)
             {
@@ -109,6 +112,11 @@ namespace Game1
             }
             #endregion
 
+            if (!GraphicsDevice.Viewport.Bounds.Contains(ghost.Bounds))
+            {
+                ghost.Move(previousGhostPos - ghost.Position);
+                cam.Move(previousCamPos - cam.CamPos, GraphicsDevice.Viewport);
+            }
             // TODO: Add your update logic here
 
             base.Update(gameTime);
